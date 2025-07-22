@@ -1,0 +1,529 @@
+
+                           
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BitSplit - Premium ckBTC Wallet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/@dfinity/agent@0.19.2/lib/index.js"></script>
+    <script src="https://unpkg.com/@dfinity/candid@0.19.2/lib/index.js"></script>
+    <script src="https://unpkg.com/@dfinity/principal@0.19.2/lib/index.js"></script>
+    <script src="https://unpkg.com/@dfinity/auth-client@0.19.2/lib/index.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        body {
+            background: #0a0a0a;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.08) 0%, transparent 70%),
+                radial-gradient(circle at 80% 20%, rgba(255, 215, 0, 0.06) 0%, transparent 70%),
+                radial-gradient(circle at 40% 80%, rgba(184, 134, 11, 0.05) 0%, transparent 70%);
+            min-height: 100vh;
+        }
+        
+        .premium-gradient {
+            background: linear-gradient(135deg, #d4af37 0%, #ffd700 50%, #b8860b 100%);
+        }
+        
+        .premium-text-gradient {
+            background: linear-gradient(135deg, #d4af37 0%, #ffd700 50%, #b8860b 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .glass-card {
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.25),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+        
+        .luxury-card {
+            background: linear-gradient(145deg, rgba(20, 20, 20, 0.95), rgba(12, 12, 12, 0.98));
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.1);
+        }
+        
+        .premium-btn {
+            background: linear-gradient(145deg, #d4af37, #ffd700);
+            color: #000;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            transition: all 0.3s ease;
+            box-shadow: 
+                0 10px 25px rgba(212, 175, 55, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .premium-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 15px 35px rgba(212, 175, 55, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+        
+        .secondary-btn {
+            background: rgba(212, 175, 55, 0.1);
+            border: 1px solid rgba(212, 175, 55, 0.4);
+            color: #d4af37;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .secondary-btn:hover {
+            background: rgba(212, 175, 55, 0.2);
+            border-color: #ffd700;
+            color: #ffd700;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
+        }
+        
+        .balance-card {
+            background: linear-gradient(145deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.95));
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.1), transparent);
+            animation: shimmer 3s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { left: -100%; }
+            100% { left: 100%; }
+        }
+        
+        .floating-animation {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        .glow-effect {
+            box-shadow: 0 0 30px rgba(212, 175, 55, 0.3);
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .premium-input {
+            background: rgba(25, 25, 25, 0.9);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #ffffff;
+            transition: all 0.3s ease;
+        }
+        
+        .premium-input:focus {
+            border-color: #ffd700;
+            box-shadow: 0 0 25px rgba(212, 175, 55, 0.15);
+            background: rgba(30, 30, 30, 0.95);
+            outline: none;
+        }
+        
+        .premium-select {
+            background: rgba(25, 25, 25, 0.95);
+            border: 1px solid rgba(212, 175, 55, 0.2);
+            color: #ffffff;
+        }
+        
+        .transaction-item {
+            background: rgba(20, 20, 20, 0.8);
+            border: 1px solid rgba(212, 175, 55, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            background: rgba(30, 30, 30, 0.9);
+            border-color: rgba(212, 175, 55, 0.2);
+            transform: translateX(8px);
+        }
+        
+        .loading-spinner {
+            border: 3px solid rgba(212, 175, 55, 0.3);
+            border-top: 3px solid #ffd700;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 
+                0 25px 50px rgba(0, 0, 0, 0.4),
+                0 0 30px rgba(212, 175, 55, 0.2);
+        }
+        
+        .bitcoin-icon {
+            background: linear-gradient(145deg, #d4af37, #ffd700);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
+        }
+        
+        .nav-blur {
+            background: rgba(10, 10, 10, 0.95);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(212, 175, 55, 0.15);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        }
+        
+        .section-spacing {
+            padding: 4rem 0;
+        }
+        
+        .card-grid {
+            display: grid;
+            gap: 2rem;
+        }
+        
+        .modern-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+        
+        .hero-section {
+            padding: 8rem 0 6rem 0;
+            position: relative;
+        }
+        
+        .dashboard-header {
+            margin-bottom: 3rem;
+            text-align: center;
+        }
+        
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 4rem;
+        }
+    </style>
+</head>
+<body class="text-white">
+    <!-- Navigation -->
+    <nav class="nav-blur p-6 sticky top-0 z-40">
+        <div class="modern-container flex justify-between items-center">
+            <div class="flex items-center space-x-4">
+                <div class="text-3xl bitcoin-icon font-bold">₿</div>
+                <h1 class="text-3xl font-black premium-text-gradient tracking-wide">BitSplit</h1>
+                <span class="text-xs uppercase tracking-widest text-white/40 font-semibold">Premium</span>
+            </div>
+            <div class="flex items-center space-x-6">
+                <span id="userPrincipal" class="text-sm text-white/60 font-medium"></span>
+                <button id="loginBtn" class="secondary-btn px-8 py-3 rounded-xl transition-all duration-300 font-bold text-sm uppercase tracking-wider">
+                    Connect Wallet
+                </button>
+                <button id="logoutBtn" class="bg-red-600/10 border border-red-500/20 text-red-400 hover:bg-red-600/20 px-8 py-3 rounded-xl transition-all duration-300 hidden font-bold text-sm uppercase tracking-wider">
+                    Disconnect
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="modern-container">
+        <!-- Welcome Screen -->
+        <div id="welcomeScreen" class="hero-section text-center">
+            <div class="floating-animation mb-12">
+                <div class="text-9xl mb-8 bitcoin-icon font-bold">₿</div>
+            </div>
+            <div class="max-w-4xl mx-auto">
+                <h2 class="text-7xl font-black mb-8 premium-text-gradient tracking-tight leading-none">
+                    Welcome to BitSplit
+                </h2>
+                <p class="text-2xl mb-16 text-white/80 leading-relaxed font-light">
+                    The premium ckBTC wallet that intelligently splits your income into Spend, Save, and Invest categories. 
+                    Experience the future of crypto financial management.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+                <div class="glass-card p-10 rounded-3xl feature-card transition-all duration-700 hover:scale-105">
+                    <div class="text-6xl mb-6">💸</div>
+                    <h3 class="font-black mb-4 text-2xl premium-text-gradient">Auto-Split Intelligence</h3>
+                    <p class="text-white/70 leading-relaxed text-lg">Advanced algorithms automatically divide incoming ckBTC into your personalized financial categories with precision</p>
+                </div>
+                <div class="glass-card p-10 rounded-3xl feature-card transition-all duration-700 hover:scale-105">
+                    <div class="text-6xl mb-6">📊</div>
+                    <h3 class="font-black mb-4 text-2xl premium-text-gradient">Premium Dashboard</h3>
+                    <p class="text-white/70 leading-relaxed text-lg">Monitor your wealth with sophisticated charts and analytics in a beautiful, intuitive interface</p>
+                </div>
+                <div class="glass-card p-10 rounded-3xl feature-card transition-all duration-700 hover:scale-105">
+                    <div class="text-6xl mb-6">🔒</div>
+                    <h3 class="font-black mb-4 text-2xl premium-text-gradient">Ultra-Secure</h3>
+                    <p class="text-white/70 leading-relaxed text-lg">Built on Internet Computer's cutting-edge blockchain with military-grade Internet Identity authentication</p>
+                </div>
+            </div>
+            
+            <button id="getStartedBtn" class="premium-btn px-16 py-6 rounded-2xl text-xl font-black tracking-wider transform transition-all duration-300">
+                BEGIN YOUR JOURNEY
+            </button>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboardScreen" class="hidden section-spacing">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h2 class="text-5xl font-black premium-text-gradient mb-4">Your Portfolio</h2>
+                <p class="text-xl text-white/70">Manage your ckBTC with precision and style</p>
+            </div>
+
+            <!-- Balance Overview -->
+            <div class="card-grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-16">
+                <div class="luxury-card p-8 rounded-3xl balance-card">
+                    <div class="flex items-center justify-between">
+                        <div class="z-10 relative">
+                            <p class="text-white/50 text-sm font-bold uppercase tracking-widest mb-2">Total Balance</p>
+                            <p id="totalBalance" class="text-4xl font-black premium-text-gradient">0 ckBTC</p>
+                        </div>
+                        <div class="text-5xl bitcoin-icon opacity-60">₿</div>
+                    </div>
+                </div>
+                
+                <div class="luxury-card p-8 rounded-3xl balance-card">
+                    <div class="flex items-center justify-between">
+                        <div class="z-10 relative">
+                            <p class="text-emerald-300/60 text-sm font-bold uppercase tracking-widest mb-2">Spend</p>
+                            <p id="spendBalance" class="text-4xl font-black text-emerald-300">0 ckBTC</p>
+                        </div>
+                        <div class="text-5xl text-emerald-300/60">💸</div>
+                    </div>
+                </div>
+                
+                <div class="luxury-card p-8 rounded-3xl balance-card">
+                    <div class="flex items-center justify-between">
+                        <div class="z-10 relative">
+                            <p class="text-purple-300/60 text-sm font-bold uppercase tracking-widest mb-2">Save</p>
+                            <p id="saveBalance" class="text-4xl font-black text-purple-300">0 ckBTC</p>
+                        </div>
+                        <div class="text-5xl text-purple-300/60">💰</div>
+                    </div>
+                </div>
+                
+                <div class="luxury-card p-8 rounded-3xl balance-card">
+                    <div class="flex items-center justify-between">
+                        <div class="z-10 relative">
+                            <p class="text-orange-300/60 text-sm font-bold uppercase tracking-widest mb-2">Invest</p>
+                            <p id="investBalance" class="text-4xl font-black text-orange-300">0 ckBTC</p>
+                        </div>
+                        <div class="text-5xl text-orange-300/60">📈</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="action-grid mb-16">
+                <button id="addIncomeBtn" class="secondary-btn px-8 py-6 rounded-2xl font-black tracking-wider text-lg">
+                    + ADD INCOME
+                </button>
+                <button id="spendFundsBtn" class="secondary-btn px-8 py-6 rounded-2xl font-black tracking-wider text-lg">
+                    💸 SPEND FUNDS
+                </button>
+                <button id="splitSettingsBtn" class="secondary-btn px-8 py-6 rounded-2xl font-black tracking-wider text-lg">
+                    ⚙️ SETTINGS
+                </button>
+                <button id="transferBtn" class="secondary-btn px-8 py-6 rounded-2xl font-black tracking-wider text-lg">
+                    🔄 TRANSFER
+                </button>
+            </div>
+
+            <!-- Charts and Transactions -->
+            <div class="card-grid grid-cols-1 lg:grid-cols-2">
+                <!-- Balance Chart -->
+                <div class="glass-card p-10 rounded-3xl">
+                    <h3 class="text-3xl font-black mb-8 premium-text-gradient">Balance Distribution</h3>
+                    <canvas id="balanceChart" width="400" height="300"></canvas>
+                </div>
+
+                <!-- Recent Transactions -->
+                <div class="glass-card p-10 rounded-3xl">
+                    <h3 class="text-3xl font-black mb-8 premium-text-gradient">Recent Activity</h3>
+                    <div id="transactionList" class="space-y-4 max-h-96 overflow-y-auto">
+                        <!-- Transactions will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modals -->
+    
+    <!-- Add Income Modal -->
+    <div id="addIncomeModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="luxury-card p-10 rounded-2xl max-w-md w-full mx-4 glow-effect">
+            <h3 class="text-3xl font-black mb-8 premium-text-gradient">Add Income</h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold mb-3 text-white uppercase tracking-wider">Amount (ckBTC)</label>
+                    <input id="incomeAmount" type="number" step="0.00000001" placeholder="0.00000000" 
+                           class="w-full premium-input rounded-xl px-6 py-4 text-white placeholder-white/40 text-lg font-medium">
+                </div>
+                <div class="flex space-x-4">
+                    <button id="confirmIncomeBtn" class="flex-1 premium-btn py-4 rounded-xl font-bold tracking-wide">
+                        CONFIRM
+                    </button>
+                    <button id="cancelIncomeBtn" class="flex-1 secondary-btn py-4 rounded-xl font-bold tracking-wide">
+                        CANCEL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Split Settings Modal -->
+    <div id="splitSettingsModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="luxury-card p-10 rounded-2xl max-w-md w-full mx-4 glow-effect">
+            <h3 class="text-3xl font-black mb-8 premium-text-gradient">Split Settings</h3>
+            <div class="space-y-8">
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="text-sm font-bold text-emerald-400 uppercase tracking-wider">Spend</label>
+                        <span id="spendPercentLabel" class="text-emerald-400 font-black text-lg">50%</span>
+                    </div>
+                    <input id="spendPercent" type="range" min="0" max="100" value="50" 
+                           class="w-full premium-slider h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="text-sm font-bold text-purple-400 uppercase tracking-wider">Save</label>
+                        <span id="savePercentLabel" class="text-purple-400 font-black text-lg">30%</span>
+                    </div>
+                    <input id="savePercent" type="range" min="0" max="100" value="30" 
+                           class="w-full premium-slider h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div>
+                    <div class="flex justify-between items-center mb-4">
+                        <label class="text-sm font-bold text-orange-400 uppercase tracking-wider">Invest</label>
+                        <span id="investPercentLabel" class="text-orange-400 font-black text-lg">20%</span>
+                    </div>
+                    <input id="investPercent" type="range" min="0" max="100" value="20" 
+                           class="w-full premium-slider h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                </div>
+                <div class="glass-card p-4 rounded-xl">
+                    <div class="flex justify-between text-lg font-bold">
+                        <span class="premium-text-gradient">Total:</span>
+                        <span id="totalPercent" class="premium-text-gradient">100%</span>
+                    </div>
+                </div>
+                <div class="flex space-x-4">
+                    <button id="saveSplitBtn" class="flex-1 premium-btn py-4 rounded-xl font-bold tracking-wide">
+                        SAVE
+                    </button>
+                    <button id="cancelSplitBtn" class="flex-1 secondary-btn py-4 rounded-xl font-bold tracking-wide">
+                        CANCEL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spend Funds Modal -->
+    <div id="spendModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="luxury-card p-10 rounded-2xl max-w-md w-full mx-4 glow-effect">
+            <h3 class="text-3xl font-black mb-8 premium-text-gradient">Spend Funds</h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold mb-3 text-white uppercase tracking-wider">Amount (ckBTC)</label>
+                    <input id="spendAmount" type="number" step="0.00000001" placeholder="0.00000000" 
+                           class="w-full premium-input rounded-xl px-6 py-4 text-white placeholder-white/40 text-lg font-medium">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-3 text-white uppercase tracking-wider">Description</label>
+                    <input id="spendDescription" type="text" placeholder="What did you spend on?" 
+                           class="w-full premium-input rounded-xl px-6 py-4 text-white placeholder-white/40 text-lg font-medium">
+                </div>
+                <div class="flex space-x-4">
+                    <button id="confirmSpendBtn" class="flex-1 premium-btn py-4 rounded-xl font-bold tracking-wide">
+                        SPEND
+                    </button>
+                    <button id="cancelSpendBtn" class="flex-1 secondary-btn py-4 rounded-xl font-bold tracking-wide">
+                        CANCEL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transfer Modal -->
+    <div id="transferModal" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="luxury-card p-10 rounded-2xl max-w-md w-full mx-4 glow-effect">
+            <h3 class="text-3xl font-black mb-8 premium-text-gradient">Transfer Between Categories</h3>
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-bold mb-3 text-gray-300 uppercase tracking-wider">From</label>
+                    <select id="transferFrom" class="w-full premium-select rounded-xl px-6 py-4 text-white text-lg font-medium">
+                        <option value="spend">Spend</option>
+                        <option value="save">Save</option>
+                        <option value="invest">Invest</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-3 text-gray-300 uppercase tracking-wider">To</label>
+                    <select id="transferTo" class="w-full premium-select rounded-xl px-6 py-4 text-white text-lg font-medium">
+                        <option value="spend">Spend</option>
+                        <option value="save">Save</option>
+                        <option value="invest">Invest</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-bold mb-3 text-gray-300 uppercase tracking-wider">Amount (ckBTC)</label>
+                    <input id="transferAmount" type="number" step="0.00000001" placeholder="0.00000000" 
+                           class="w-full premium-input rounded-xl px-6 py-4 text-white placeholder-gray-500 text-lg font-medium">
+                </div>
+                <div class="flex space-x-4">
+                    <button id="confirmTransferBtn" class="flex-1 premium-btn py-4 rounded-xl font-bold tracking-wide">
+                        TRANSFER
+                    </button>
+                    <button id="cancelTransferBtn" class="flex-1 secondary-btn py-4 rounded-xl font-bold tracking-wide">
+                        CANCEL
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 modal-overlay hidden items-center justify-center z-50">
+        <div class="luxury-card p-12 rounded-2xl text-center glow-effect">
+            <div class="loading-spinner mx-auto mb-6"></div>
+            <p class="text-2xl font-bold premium-text-gradient">Processing...</p>
+        </div>
+    </div>
+
+    <script type="module" src="index.js"></script>
+</body>
+</html>
